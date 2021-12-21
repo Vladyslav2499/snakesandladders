@@ -1,5 +1,10 @@
 package com.codingtask.snakesandladders.service;
 
+import com.codingtask.snakesandladders.entity.Game;
+import com.codingtask.snakesandladders.entity.Player;
+import com.codingtask.snakesandladders.repository.GameRepositoryImpl;
+import com.codingtask.snakesandladders.service.impl.GameServiceImpl;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -8,7 +13,9 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
 
@@ -22,7 +29,9 @@ class GameServiceImplTest {
 	private static final int ROLLED_VALUE_THREE = 3;
 	private static final int ROLLED_VALUE_FOUR = 4;
 	private static final int TOKEN_POSITION_FOUR = 4;
+	private static final int TOKEN_POSITION_FIVE = 5;
 	private static final int TOKEN_POSITION_EIGHT = 8;
+	private static final int TOKEN_POSITION_NINE = 9;
 
 	@Spy
 	@InjectMocks
@@ -86,6 +95,19 @@ class GameServiceImplTest {
 		actual = testInstance.moveToken(GAME_ID, PLAYER_ID);
 
 		assertEquals(TOKEN_POSITION_EIGHT, actual.getPlayer().getTokenPosition());
+		assertEquals(ROLLED_VALUE_FOUR, actual.getRolledValue());
+	}
+
+	@Test
+	void shouldMovePlayerTokenByGivenFourPoints() {
+		doReturn(game).when(testInstance).findById(GAME_ID);
+		when(playerService.findById(PLAYER_ID)).thenReturn(player);
+		when(diceRollingService.roll()).thenReturn(ROLLED_VALUE_FOUR);
+		player.setTokenPosition(TOKEN_POSITION_FIVE);
+
+		Game actual = testInstance.moveToken(GAME_ID, PLAYER_ID);
+
+		assertEquals(TOKEN_POSITION_NINE, actual.getPlayer().getTokenPosition());
 		assertEquals(ROLLED_VALUE_FOUR, actual.getRolledValue());
 	}
 }
