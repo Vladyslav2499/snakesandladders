@@ -14,7 +14,9 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
@@ -32,6 +34,8 @@ class GameServiceImplTest {
 	private static final int TOKEN_POSITION_FIVE = 5;
 	private static final int TOKEN_POSITION_EIGHT = 8;
 	private static final int TOKEN_POSITION_NINE = 9;
+	private static final int WINNER_TOKEN_POSITION = 100;
+	private static final int BEFORE_LAST_STEP_TOKEN_POSITION = 97;
 
 	@Spy
 	@InjectMocks
@@ -66,6 +70,7 @@ class GameServiceImplTest {
 		Game actual = testInstance.create();
 
 		assertNotNull(actual.getPlayer());
+		assertFalse(actual.getPlayer().isWinner());
 		assertEquals(START_TOKEN_POSITION, actual.getPlayer().getTokenPosition());
 	}
 
@@ -78,6 +83,7 @@ class GameServiceImplTest {
 		Game actual = testInstance.moveToken(GAME_ID, PLAYER_ID);
 
 		assertEquals(TOKEN_POSITION_FOUR, actual.getPlayer().getTokenPosition());
+		assertFalse(actual.getPlayer().isWinner());
 		assertEquals(ROLLED_VALUE_THREE, actual.getRolledValue());
 	}
 
@@ -90,11 +96,13 @@ class GameServiceImplTest {
 		Game actual = testInstance.moveToken(GAME_ID, PLAYER_ID);
 
 		assertEquals(TOKEN_POSITION_FOUR, actual.getPlayer().getTokenPosition());
+		assertFalse(actual.getPlayer().isWinner());
 		assertEquals(ROLLED_VALUE_THREE, actual.getRolledValue());
 
 		actual = testInstance.moveToken(GAME_ID, PLAYER_ID);
 
 		assertEquals(TOKEN_POSITION_EIGHT, actual.getPlayer().getTokenPosition());
+		assertFalse(actual.getPlayer().isWinner());
 		assertEquals(ROLLED_VALUE_FOUR, actual.getRolledValue());
 	}
 
@@ -108,6 +116,35 @@ class GameServiceImplTest {
 		Game actual = testInstance.moveToken(GAME_ID, PLAYER_ID);
 
 		assertEquals(TOKEN_POSITION_NINE, actual.getPlayer().getTokenPosition());
+		assertFalse(actual.getPlayer().isWinner());
 		assertEquals(ROLLED_VALUE_FOUR, actual.getRolledValue());
+	}
+
+	@Test
+	void shouldDefinePlayerAsWinner() {
+		doReturn(game).when(testInstance).findById(GAME_ID);
+		when(playerService.findById(PLAYER_ID)).thenReturn(player);
+		when(diceRollingService.roll()).thenReturn(ROLLED_VALUE_THREE);
+		player.setTokenPosition(BEFORE_LAST_STEP_TOKEN_POSITION);
+
+		Game actual = testInstance.moveToken(GAME_ID, PLAYER_ID);
+
+		assertEquals(WINNER_TOKEN_POSITION, actual.getPlayer().getTokenPosition());
+		assertEquals(ROLLED_VALUE_THREE, actual.getRolledValue());
+		assertTrue(actual.getPlayer().isWinner());
+	}
+
+	@Test
+	void shouldNotDefinePlayerAsWinner() {
+		doReturn(game).when(testInstance).findById(GAME_ID);
+		when(playerService.findById(PLAYER_ID)).thenReturn(player);
+		when(diceRollingService.roll()).thenReturn(ROLLED_VALUE_FOUR);
+		player.setTokenPosition(BEFORE_LAST_STEP_TOKEN_POSITION);
+
+		Game actual = testInstance.moveToken(GAME_ID, PLAYER_ID);
+
+		assertEquals(BEFORE_LAST_STEP_TOKEN_POSITION, actual.getPlayer().getTokenPosition());
+		assertEquals(ROLLED_VALUE_FOUR, actual.getRolledValue());
+		assertFalse(actual.getPlayer().isWinner());
 	}
 }
