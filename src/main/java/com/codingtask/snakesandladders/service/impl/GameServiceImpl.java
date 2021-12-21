@@ -17,6 +17,8 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 public class GameServiceImpl implements GameService {
 
+	private static final int WINNER_TOKEN_POSITION = 100;
+
 	private final GameRepositoryImpl gameRepository;
 
 	private final PlayerService playerService;
@@ -45,6 +47,7 @@ public class GameServiceImpl implements GameService {
 		int rolledValue = diceRollingService.roll();
 
 		player.setTokenPosition(computeTokenPosition(player.getTokenPosition(), rolledValue));
+		player.setWinner(isWinner(player));
 		game.setRolledValue(rolledValue);
 		game.setPlayer(player);
 
@@ -52,6 +55,20 @@ public class GameServiceImpl implements GameService {
 	}
 
 	private int computeTokenPosition(int currentTokenPosition, int rolledValue) {
-		return currentTokenPosition + rolledValue;
+		int newTokenPosition = currentTokenPosition + rolledValue;
+
+		if (WINNER_TOKEN_POSITION == newTokenPosition) {
+			return newTokenPosition;
+		}
+
+		if (WINNER_TOKEN_POSITION < newTokenPosition) {
+			return currentTokenPosition;
+		}
+
+		return newTokenPosition;
+	}
+
+	private boolean isWinner(Player player) {
+		return WINNER_TOKEN_POSITION == player.getTokenPosition();
 	}
 }

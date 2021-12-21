@@ -14,6 +14,8 @@ public class Player {
 
 	private int tokenPosition;
 
+	private boolean isWinner;
+
 	public Player() {
 		id = UNIQUE_ID++;
 		tokenPosition = 1;
